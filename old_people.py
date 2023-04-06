@@ -43,6 +43,7 @@ def get_old_people():
         age = row[2]
         old_people.append((name,age))
     # TODO: Create function body
+    conn.close()
     return old_people
 
 def print_name_and_age(name_and_age_list):
@@ -64,13 +65,18 @@ def save_name_and_age_to_csv(name_and_age_list, csv_path):
         name_and_age_list (list): (name, age) of people
         csv_path (str): Path of CSV file
     """
-    with open(csv_path, 'w', newline='') as csvfile:
-        csv_writer = csv.writer(csvfile)
+    conn = sqlite3.connect('social_network.db')
+    cursor = conn.cursor()
+    with open(csv_path, 'w', newline='') as file:
+        csv_writer = csv.writer(file)
         csv_writer.writerow(['name','age'])
         for name, age in name_and_age_list:
-            csv_writer.writerow([name,age])
-            csv_path = f"C:\Users\dhava\Documents\GitHub\COMP593-Lab07"
+            cursor.execute("SELECT name, age from people WHERE name=?", (name))
+            result_name = cursor.fetchone()
+            csv_writer.writerow(result_name)
+            csv_path = "old_people.csv"
     # TODO: Create function body
+    conn.close()
     return
 
 def get_script_dir():
@@ -79,7 +85,7 @@ def get_script_dir():
     Returns:
         str: Full path of the directory in which this script resides
     """
-    script_path = os.path.abspath(inspect.getframeinfo(inspect.currentframe()).filename)
+    script_path = os.path.dirname(os.path.realpath(__file__))
     return os.path.dirname(script_path)
 
 if __name__ == '__main__':
